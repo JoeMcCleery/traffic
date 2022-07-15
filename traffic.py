@@ -69,7 +69,11 @@ def load_data(data_dir):
             # Load image
             img = cv2.imread(img_path)
             # Resize image
-            resized = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT), interpolation=cv2.INTER_AREA)
+            resized = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
+
+            # Normalise colour values
+            resized = resized / 255
+
             # Add to images
             images.append(resized)
             # Add to labels
@@ -99,7 +103,7 @@ def get_model():
 
         # Add hidden layer with 128 units, and dropout
         tf.keras.layers.Dense(128, activation="relu"),
-        tf.keras.layers.Dropout(0.1),
+        tf.keras.layers.Dropout(0.5),
 
         # Add output layer, which represents probability distribution of each image category
         tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
