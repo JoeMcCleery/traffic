@@ -85,18 +85,21 @@ def get_model():
     """
     # Create model
     model = tf.keras.Sequential([
-        # Convolutional layer, Learn 32 filters using a 3x3 kernel, with input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)
-        tf.keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+        # Input layer, with input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)
+        tf.keras.layers.InputLayer(input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+
+        # Convolutional layer, Learn 32 filters using a 3x3 kernel
+        tf.keras.layers.Conv2D(32, (3, 3), activation="relu"),
 
         # Max pooling layer, using a 2x2 pool size
-        tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+        tf.keras.layers.MaxPool2D(pool_size=(2, 2)),
 
         # Flatten units
         tf.keras.layers.Flatten(),
 
         # Add hidden layer with 128 units, and dropout
         tf.keras.layers.Dense(128, activation="relu"),
-        tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.Dropout(0.1),
 
         # Add output layer, which represents probability distribution of each image category
         tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
