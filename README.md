@@ -12,31 +12,46 @@ py traffic.py gtsrb
 ---
 ## Experimentation Process
 The process used to find the best outcome for the task was to run the training and inference with
-different parameters as per the table bellow. The x-axis represents the number of dense (hidden)
+different parameters as per the tables bellow. The x-axis represents the number of dense (hidden)
 layers in the network, and how many units they have. The y-axis is the number of convolutional layers,
-how many filters they have and whether max-pooling was used after each layer. The values in the table
-are (training accuracy / test accuracy) averaged over 3 runs of 10 epochs.
+how many filters they have and whether max-pooling was used after each layer. The values in table 1 are
+training accuracy averaged over 3 runs of 10 epochs. The values in table 2 are testing accuracy averaged
+over 3 runs of 10 epochs.
 
-| Filters-Pooling-Layers \ Units-Layers | 0-0 | 128-1 | 128-2 | 128-3 | 256-1 | 256-2 | 256-3 | 512-1 | 512-2 | 512-3 |
-|--------------------------------------:|----:|------:|------:|------:|------:|------:|------:|------:|------:|------:|
-|                             0-false-0 |     |       |       |       |       |       |       |       |       |       |
-|                              0-true-0 |     |       |       |       |       |       |       |       |       |       |
-|                             8-false-1 |     |       |       |       |       |       |       |       |       |       |
-|                              8-true-1 |     |       |       |       |       |       |       |       |       |       |
-|                            16-false-1 |     |       |       |       |       |       |       |       |       |       |
-|                             16-true-1 |     |       |       |       |       |       |       |       |       |       |
-|                            32-false-1 |     |       |       |       |       |       |       |       |       |       |
-|                             32-true-1 |     |       |       |       |       |       |       |       |       |       |
-|                             8-false-2 |     |       |       |       |       |       |       |       |       |       |
-|                              8-true-2 |     |       |       |       |       |       |       |       |       |       |
-|                            16-false-2 |     |       |       |       |       |       |       |       |       |       |
-|                             16-true-2 |     |       |       |       |       |       |       |       |       |       |
-|                            32-false-2 |     |       |       |       |       |       |       |       |       |       |
-|                             32-true-2 |     |       |       |       |       |       |       |       |       |       |
-|                             8-false-3 |     |       |       |       |       |       |       |       |       |       |
-|                              8-true-3 |     |       |       |       |       |       |       |       |       |       |
-|                            16-false-3 |     |       |       |       |       |       |       |       |       |       |
-|                             16-true-3 |     |       |       |       |       |       |       |       |       |       |
-|                            32-false-3 |     |       |       |       |       |       |       |       |       |       |
-|                             32-true-3 |     |       |       |       |       |       |       |       |       |       |
+Table 1 - Training accuracy Phase 1
 
+![Table 1](/results_01_training.png)
+
+Table 2 - Testing Accuracy Phase 1
+
+![Table 1](/results_01_testing.png)
+
+The most promising runs used an x value of:
+- 2 dense layers with 256 units
+- 1 dense layer with 512 units
+
+and a y value of:
+- 2 convolutional layers with 32 filters and no max-pooling
+- 3 convolutional layers with 16 filters and no max-pooling
+- 3 convolutional layers with 32 filters and no max-pooling
+
+Training accuracy was fairly accurate for quite a few runs achieving 99.0% or higher accuracy. The testing
+accuracy however never achieved greater than 98.3%. The next phase of experimentation was to use dropout in
+an attempt to improve testing accuracy on the most promising runs from the first phase.
+
+In the tables bellow, the y-axis is the same as phase 1, but the x-axis now includes a value for dropout rate. Again
+values were averaged over 3 runs of 10 epochs.
+
+Table 3 - Training accuracy Phase 2
+
+![Table 3](/results_02_training.png)
+
+Table 4 - Testing Accuracy Phase 2
+
+![Table 4](/results_02_testing.png)
+
+Training accuracy for phase 2 was still quite high, although higher dropout rates tended to reduce the accuracy.
+However, higher dropout rates would improve the accuracy during testing, e.g. the model was able to generalise better.
+
+The best performing network when testing was:
+- 3 convolutional layers with 32 filters, 1 dense layer with 512 units and a dropout rate of 0.5

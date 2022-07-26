@@ -12,51 +12,17 @@ IMG_HEIGHT = 30
 NUM_CATEGORIES = 43
 TEST_SIZE = 0.4
 
-X_PARAMS = [
-    (0, 0),
-    (128, 1),
-    (128, 2),
-    (128, 3),
-    (256, 1),
-    (256, 2),
-    (256, 3),
-    (512, 1),
-    (512, 2),
-    (512, 3)
-]
+DENSE_LAYERS = 1
+DENSE_UNITS = 512
 
-Y_PARAMS = [
-    (0, False, 0),
-    (0, True, 0),
-    (8, False, 1),
-    (8, True, 1),
-    (16, False, 1),
-    (16, True, 1),
-    (32, False, 1),
-    (32, True, 1),
-    (8, False, 2),
-    (8, True, 2),
-    (16, False, 2),
-    (16, True, 2),
-    (32, False, 2),
-    (32, True, 2),
-    (8, False, 3),
-    (8, True, 3),
-    (16, False, 3),
-    (16, True, 3),
-    (32, False, 3),
-    (32, True, 3)
-]
+DROPOUT = 0.5
 
-DENSE_LAYERS = 0
-DENSE_UNITS = 0
-
-CONV_LAYERS = 0
-CONV_FILTERS = 0
+CONV_LAYERS = 3
+CONV_FILTERS = 32
 
 MAX_POOLING = False
 
-NUM_SAMPLES = 3
+LEARNING_RATE = 1e-3
 
 def main():
 
@@ -69,48 +35,18 @@ def main():
 
     # Split data into training and testing sets
     labels = tf.keras.utils.to_categorical(labels)
+    x_train, x_test, y_train, y_test = train_test_split(
+        np.array(images), np.array(labels), test_size=TEST_SIZE
+    )
 
+    # Get a compiled neural network
+    model = get_model()
 
-    results = dict()
-    global CONV_FILTERS
-    global MAX_POOLING
-    global CONV_LAYERS
-    global DENSE_UNITS
-    global DENSE_LAYERS
+    # Fit model on training data
+    model.fit(x_train, y_train, epochs=EPOCHS)
 
-    for y in Y_PARAMS:
-        CONV_FILTERS = y[0]
-        MAX_POOLING = y[1]
-        CONV_LAYERS = y[2]
-        for x in X_PARAMS:
-            DENSE_UNITS = x[0]
-            DENSE_LAYERS = x[1]
-
-            for i in range(NUM_SAMPLES):
-
-                x_train, x_test, y_train, y_test = train_test_split(
-                    np.array(images), np.array(labels), test_size=TEST_SIZE
-                )
-
-                # Get a compiled neural network
-                model = get_model()
-
-                # Fit model on training data
-                training = model.fit(x_train, y_train, epochs=EPOCHS)
-
-                # Evaluate neural network performance
-                testing = model.evaluate(x_test,  y_test, verbose=2)
-
-                if (x, y) in results:
-                    temp = results.get((x, y))
-                    results[(x, y)] = (temp[0] + training.history['accuracy'][-1], temp[1] + testing[-1])
-                else:
-                    results[(x, y)] = (training.history['accuracy'][-1], testing[-1])
-            temp = results.get((x, y))
-            results[(x, y)] = (temp[0] / NUM_SAMPLES, temp[1] / NUM_SAMPLES)
-
-    for res in results:
-        print(f"{res}: {results[res]}")
+    # Evaluate neural network performance
+    model.evaluate(x_test,  y_test, verbose=2)
 
     # Save model to file
     if len(sys.argv) == 3:
@@ -176,9 +112,11 @@ def get_model():
     # Add output layer, which represents probability distribution of each image category
     model.add(tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax"))
 
+    print(f"Compiling model with learning rate: {LEARNING_RATE}...")
+
     # Compile model
     model.compile(
-        optimizer="adam",
+        optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE),
         loss="categorical_crossentropy",
         metrics=["accuracy"]
     )
@@ -199,11 +137,11 @@ def add_conv(model):
 
 
 def add_dense(model):
-    print(
-        f"Adding {DENSE_LAYERS} hidden layers with {DENSE_UNITS} units in each...")
+    print(f"Adding {DENSE_LAYERS} hidden layers with {DENSE_UNITS} units in each{' and a dropout rate of ' + str(DROPOUT) if DROPOUT > 0 else ''}...")
     for i in range(DENSE_LAYERS):
         model.add(tf.keras.layers.Dense(DENSE_UNITS, activation="relu"))
-        # model.Add(tf.keras.layers.Dropout(0.5))
+        if DROPOUT > 0:
+            model.add(tf.keras.layers.Dropout(DROPOUT))
     return model
 
 
